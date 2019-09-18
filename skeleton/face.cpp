@@ -45,6 +45,10 @@ void Face::fromJson(const QJsonObject &json) {
   normal = vectorFromJson(json["normal"].toArray());
   c = json["color"].toDouble();
 }
+FaceCollection::FaceCollection()
+{
+    init=false;
+}
 
 void FaceCollection::fromJson(const QJsonArray &json) {
   faces.clear();

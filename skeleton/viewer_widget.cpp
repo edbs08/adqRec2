@@ -11,8 +11,7 @@ ViewerWidget::ViewerWidget() {
   layout->addWidget(gl_widget, 1, 0);
 }
 
-void ViewerWidget::loadFile() {
-  QString file_name;
-  // TODO: open a dialog to let the user choose a json file
+void ViewerWidget::loadFile() {  
+  QString file_name= QFileDialog::getOpenFileName(this, ("Open File"),QDir::currentPath(), ("Document files (*.json)"));
   gl_widget->loadFaces(file_name);
 }

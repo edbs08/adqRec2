@@ -19,7 +19,9 @@ public:
 
 class FaceCollection {
 public:
-  std::vector<Face> faces;
+    FaceCollection();
 
-  void fromJson(const QJsonArray &json);
+    std::vector<Face> faces;
+    bool init;
+    void fromJson(const QJsonArray &json);
 };
