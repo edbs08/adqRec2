@@ -13,6 +13,8 @@ public:
     float _angle = 0;
     float left_rot=0;
     QPointF translation=QPoint(0.0f,0.0f);
+    QPointF rotation=QPoint(0.0f,0.0f);
+
     float right_trans = 0;
     QPoint old_point=QPoint(0.0f,0.0f);
     QPoint old_point_t=QPoint(0.0f,0.0f);

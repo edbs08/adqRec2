@@ -54,22 +54,22 @@ void GLWidget::paintGL() {
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();                 // Reset the model-view matrix
       glTranslatef(translation.x(),translation.y(),0.0f);
-      glRotatef(left_rot,1.0,0.0,1.0);
+      glRotatef(left_rot,rotation.x(),rotation.y(),0.0);
       /*glScalef(0.0, 0.0, 0.0);*/
       //***********//
 
       // TODO: draw the model
 
       // TODO: draw the model
-      GLuint tex;
-      glEnable(GL_TEXTURE_2D);
-      glGenTextures(1, &tex);
-      glBindTexture(GL_TEXTURE_2D, tex);
+      //GLuint tex;
+      //glEnable(GL_TEXTURE_2D);
+      //glGenTextures(1, &tex);
+      //glBindTexture(GL_TEXTURE_2D, tex);
       //glClearColor(1.0, 1.0, 1.0, 1.0);
-      glDisable(GL_DEPTH_TEST);
+      //glDisable(GL_DEPTH_TEST);
       //glDepthMask(GL_FALSE);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      //glEnable(GL_BLEND);
+      //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
       glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
       // Top face (y = 1.0f)
@@ -108,62 +108,87 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
   // - If left click is pressed: rotate
   // - If right click is pressed: translate
     //get mouse position
-    if( event->buttons() == Qt::RightButton )
+    QPoint displace(0,0);
+    QPoint mouse_pos = event->pos();
+    if( event->buttons() == Qt::RightButton ||  event->buttons() == Qt::LeftButton)
     {
-        cout<< "RightButton" <<endl;
-        QPoint mouse_pos = event->pos();
         if((mouse_pos.x()-old_point_t.x()) > 0)
         {
             //cout<<"right"<<endl;
-            translation.rx()+=0.01;
+            displace.setX(1);
+            //translation.rx()+=0.01;
         }
         if((mouse_pos.x()-old_point_t.x()) < 0)
         {
             //cout<<"left"<<endl;
-            translation.rx()-=0.01;
+            displace.setX(-1);
+            //translation.rx()-=0.01;
         }
 
         if((mouse_pos.y()-old_point_t.y()) > 0)
         {
-            //cout<<"right"<<endl;
-            translation.ry()-=0.01;
+            //cout<<"up"<<endl;
+            displace.setY(-1);
+            //translation.ry()-=0.01;
         }
         if((mouse_pos.y()-old_point_t.y()) < 0)
         {
-            //cout<<"right"<<endl;
-            translation.ry()+=0.01;
+            //cout<<"down"<<endl;
+            displace.setY(1);
+            //translation.ry()+=0.01;
         }
-        old_point_t.setX(mouse_pos.x());
-        old_point_t.setY(mouse_pos.y());
-
-        cout<< "LeftButton - Rotation" <<left_rot<< endl;
     }
+     /***************************************************/
 
-    if(event->buttons() == Qt::LeftButton)
+    /* Left button = rotation*/
+    if( event->buttons() == Qt::LeftButton)
     {
-        cout << "hi_right_buttonpress" << endl;
-
-        QPoint mouse_pos = event->pos();
-        if((mouse_pos.x()-old_point.x()) > 0)
+        double new_value = 0.01*displace.x();
+        if((rotation.x() >=-1 && rotation.x() <= 1))
         {
-            cout<<"derecha"<<endl;
-            left_rot+=1;
+           rotation.rx()+=0.01*displace.x();
         }
         else
         {
-            cout<<"izquierda"<<endl;
-            left_rot-=1;
+            if((rotation.x()<=(-1) && new_value>=0) || (rotation.x()>=(1) && new_value<=0))
+            {
+                rotation.rx()+=0.01*displace.x();
+            }
         }
-        old_point.setX(mouse_pos.x());
-        old_point.setY(mouse_pos.y());
+        //cout<<"x "<<rotation.x()<<endl;
 
+        new_value = 0.01*displace.y();
+        if(rotation.y() >=-1 && rotation.y() <= 1)
+        {
+            rotation.ry()+=0.01*displace.y();
+        }
+        else
+        {
+            if((rotation.y()<=(-1) && new_value>=0) || (rotation.y()>=(1) && new_value<=0))
+            {
+                rotation.ry()+=0.01*displace.y();
+            }
 
+        }
+        //cout<<"y "<<rotation.y()<<endl;
+
+        left_rot+=(5*displace.y())+(5*displace.x());
         if(left_rot >= 360 )
         {
             left_rot =0;
         }
-        cout<< "LeftButton - Rotation" <<left_rot<< endl;
     }
+    /* Right button = Translation*/
+    if( event->buttons() == Qt::RightButton)
+    {
+        translation.rx()+= (0.01*displace.x());
+        translation.ry()+= (0.01*displace.y());
+    }
+
+    old_point_t.setX(mouse_pos.x());
+    old_point_t.setY(mouse_pos.y());
+
+
     //QWidget::event(event);
     QWidget::update();
 
