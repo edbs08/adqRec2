@@ -55,7 +55,7 @@ void GLWidget::paintGL() {
       glLoadIdentity();                 // Reset the model-view matrix
       glTranslatef(translation.x(),translation.y(),0.0f);
       glRotatef(left_rot,rotation.x(),rotation.y(),0.0);
-      /*glScalef(0.0, 0.0, 0.0);*/
+      glScalef(_angle, _angle, _angle);
       //***********//
 
       // TODO: draw the model
