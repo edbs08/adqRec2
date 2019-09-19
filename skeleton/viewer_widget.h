@@ -15,6 +15,9 @@ public:
   QGridLayout *layout;
   QPushButton *load_file_button;
   GLWidget *gl_widget;
+
+  QSlider *slider = new QSlider(Qt::Horizontal);
 public slots:
+  void alphaSlide(int);
   void loadFile();
 };

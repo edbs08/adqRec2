@@ -1,5 +1,5 @@
 #include "face.h"
-
+#include <iostream>
 QJsonArray vectorToJson(const QVector3D &vector) {
   QJsonArray result;
   for (int dim = 0; dim < 3; dim++)
@@ -49,7 +49,7 @@ FaceCollection::FaceCollection()
 {
     init=false;
 }
-
+using namespace std;
 void FaceCollection::fromJson(const QJsonArray &json) {
   faces.clear();
   for (const QJsonValue &face : json) {
