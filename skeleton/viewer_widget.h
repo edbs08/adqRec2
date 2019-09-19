@@ -17,6 +17,7 @@ public:
   GLWidget *gl_widget;
 
   QSlider *slider = new QSlider(Qt::Horizontal);
+
 public slots:
   void alphaSlide(int);
   void loadFile();
