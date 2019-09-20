@@ -3,15 +3,20 @@
 #include <QMatrix4x4>
 #include <QOpenGLWidget>
 #include <QString>
+#include <QWidget>
+#include <QtGui>
 
 #include "face.h"
+
+#define SHIFT_KEY 0x1000020
 
 class GLWidget : public QOpenGLWidget {
 public:
   Q_OBJECT
     float _alphaNew = 1;
-    float _angle = 0;
     float left_rot=0;
+    float zoomScale=1;
+    float speed_factor = 1;
     QPointF translation=QPoint(0.0f,0.0f);
     QPointF rotation=QPoint(0.0f,0.0f);
 
@@ -32,6 +37,9 @@ protected:
 
   void wheelEvent(QWheelEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
+
+  void keyPressEvent(QKeyEvent *event) override;
+  void keyReleaseEvent(QKeyEvent *event) override;
 
   FaceCollection face_collection;
 };

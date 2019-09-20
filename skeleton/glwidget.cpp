@@ -3,12 +3,16 @@
 #include <QString>
 #include <QTransform>
 #include <QtGui>
+#include <QKeyEvent>
 #include <iostream>
 #include "glwidget.h"
 
 using namespace std;
 
-GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent){}
+GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
+{
+     QWidget::setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+}
 
 GLWidget::~GLWidget() {}
 
@@ -55,10 +59,8 @@ void GLWidget::paintGL() {
       glLoadIdentity();                 // Reset the model-view matrix
       glTranslatef(translation.x(),translation.y(),0.0f);
       glRotatef(left_rot,rotation.x(),rotation.y(),0.0);
-      glScalef(_angle, _angle, _angle);
+      glScalef(zoomScale, zoomScale, zoomScale);
       //***********//
-
-      // TODO: draw the model
 
       // TODO: draw the model
       //GLuint tex;
@@ -97,7 +99,6 @@ void GLWidget::paintGL() {
 float GLWidget::getAlpha(int alpha){
 
     _alphaNew = ((float)alpha/20.0);
-    _angle = alpha*4;
     paintGL();
 
 }
@@ -146,13 +147,13 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
         double new_value = 0.01*displace.x();
         if((rotation.x() >=-1 && rotation.x() <= 1))
         {
-           rotation.rx()+=0.01*displace.x();
+           rotation.rx()+=speed_factor*0.01*displace.x();
         }
         else
         {
             if((rotation.x()<=(-1) && new_value>=0) || (rotation.x()>=(1) && new_value<=0))
             {
-                rotation.rx()+=0.01*displace.x();
+                rotation.rx()+=speed_factor*0.01*displace.x();
             }
         }
         //cout<<"x "<<rotation.x()<<endl;
@@ -160,19 +161,19 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
         new_value = 0.01*displace.y();
         if(rotation.y() >=-1 && rotation.y() <= 1)
         {
-            rotation.ry()+=0.01*displace.y();
+            rotation.ry()+=speed_factor*0.01*displace.y();
         }
         else
         {
             if((rotation.y()<=(-1) && new_value>=0) || (rotation.y()>=(1) && new_value<=0))
             {
-                rotation.ry()+=0.01*displace.y();
+                rotation.ry()+=speed_factor*0.01*displace.y();
             }
 
         }
         //cout<<"y "<<rotation.y()<<endl;
 
-        left_rot+=(5*displace.y())+(5*displace.x());
+        left_rot+=(speed_factor*3*displace.y())+(speed_factor*3*displace.x());
         if(left_rot >= 360 )
         {
             left_rot =0;
@@ -181,19 +182,44 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
     /* Right button = Translation*/
     if( event->buttons() == Qt::RightButton)
     {
-        translation.rx()+= (0.01*displace.x());
-        translation.ry()+= (0.01*displace.y());
+        translation.rx()+= (pow(speed_factor,1.5)*0.01*displace.x());
+        translation.ry()+= (pow(speed_factor,1.5)*0.01*displace.y());
     }
 
+    /*Update points*/
     old_point_t.setX(mouse_pos.x());
     old_point_t.setY(mouse_pos.y());
 
-
-    //QWidget::event(event);
     QWidget::update();
 
 }
 
-void GLWidget::wheelEvent(QWheelEvent *event) {
+void GLWidget::wheelEvent(QWheelEvent *event)
+{
   // TODO: zoom
+    QPoint numDegrees = event->angleDelta();
+    if (numDegrees.y() < 0)  zoomScale = zoomScale/(1.1*speed_factor);
+    if (numDegrees.y() > 0)  zoomScale = zoomScale*(1.1*speed_factor);
+
+    QWidget::update(); // call paintGL()
 }
+
+void GLWidget::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() ==  Qt::Key::Key_Shift)
+    {
+        cout<<"SHIFT PRESSED"<<endl;
+        speed_factor = 2;
+    }
+}
+
+void GLWidget::keyReleaseEvent(QKeyEvent *event)
+{
+    if(event->key() ==  Qt::Key::Key_Shift)
+    {
+        cout<<"SHIFT RELEASED"<<endl;
+        speed_factor = 1;
+    }
+}
+
+
