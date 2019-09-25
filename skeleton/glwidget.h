@@ -29,7 +29,7 @@ public:
   QSize sizeHint() const { return QSize(400, 400); }
 
   void loadFaces(const QString &path);
-  float getAlpha(int);
+  void getAlpha(int);
 
 protected:
   void initializeGL() override;

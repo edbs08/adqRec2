@@ -34,10 +34,9 @@ void GLWidget::loadFaces(const QString &path) {
 
 void GLWidget::initializeGL() {
 
-    glClearColor(1.0f, 0.0f, 0.0f, 1.0f); // Set background color to black and opaque
+   glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background color
     glClearDepth(1.0f);                   // Set background depth to farthest
     glEnable(GL_DEPTH_TEST);
-    glShadeModel(GL_FLAT);
     glDisable(GL_CULL_FACE);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
     setMouseTracking(true);
@@ -52,7 +51,7 @@ void GLWidget::paintGL() {
   // TODO: define the point of view
   glLoadIdentity();
 
-  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+ // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
   if(face_collection.init==true)
   {
       glMatrixMode(GL_MODELVIEW);
@@ -63,42 +62,36 @@ void GLWidget::paintGL() {
       //***********//
 
       // TODO: draw the model
-      //GLuint tex;
-      //glEnable(GL_TEXTURE_2D);
-      //glGenTextures(1, &tex);
-      //glBindTexture(GL_TEXTURE_2D, tex);
-      //glClearColor(1.0, 1.0, 1.0, 1.0);
-      //glDisable(GL_DEPTH_TEST);
-      //glDepthMask(GL_FALSE);
-      //glEnable(GL_BLEND);
-      //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-      glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
-      // Top face (y = 1.0f)
       // Define vertices in counter-clockwise (CCW) order with normal pointing out
-      //      std::cout << _alphaNew << std::endl;
+      glDepthMask(GL_FALSE);
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glBegin(GL_QUADS);
+
       for (int face_index=0;face_index<face_collection.faces.size();face_index++)
       {
           Face face = face_collection.faces[face_index];
-          float color = face_index/(float)face_collection.faces.size();//face.c;//float)// //
-          glColor4f(color, color, color, 1.0);     // Green
+          float color = face_index/(float)face_collection.faces.size() - 0.1;//face.c;//float)// //
+          glColor4f(color, color, color, _alphaNew);     // Green
+          glVertex3f( face.vertices[0].x(), face.vertices[0].y(), face.vertices[0].z());
+          glVertex3f( face.vertices[1].x(), face.vertices[1].y(), face.vertices[1].z());
+          glVertex3f( face.vertices[2].x(), face.vertices[2].y(), face.vertices[2].z());
+          glVertex3f( face.vertices[3].x(), face.vertices[3].y(), face.vertices[3].z());
 
-          glTexCoord2f(0.0f, 0.0f); glVertex3f( face.vertices[0].x(), face.vertices[0].y(), face.vertices[0].z());
-          glTexCoord2f(1.0f, 0.0f); glVertex3f( face.vertices[1].x(), face.vertices[1].y(), face.vertices[1].z());
-          glTexCoord2f(0.0f, 1.0f); glVertex3f( face.vertices[2].x(), face.vertices[2].y(), face.vertices[2].z());
-          glTexCoord2f(1.0f, 1.0f); glVertex3f( face.vertices[3].x(), face.vertices[3].y(), face.vertices[3].z());
       }
-      glEnd();  // End of drawing color-cube
+       glEnd();
 
-      glEnable(GL_DEPTH_TEST);
-      glDisable(GL_BLEND);
-      glDepthMask(GL_TRUE);
+       glEnable(GL_DEPTH_TEST);
+       glDisable(GL_BLEND);
+       glDepthMask(GL_TRUE);
+
+
   }
 }
 
-float GLWidget::getAlpha(int alpha){
+void GLWidget::getAlpha(int alpha){
 
-    _alphaNew = ((float)alpha/20.0);
+    _alphaNew = 1 - ((float)alpha/100.0);
     paintGL();
 
 }
