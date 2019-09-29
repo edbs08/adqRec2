@@ -28,6 +28,7 @@ public:
   ~GLWidget();
   QSize sizeHint() const { return QSize(400, 400); }
 
+  QVector3D object2view(Face face, GLfloat *model);
   void loadFaces(const QString &path);
   void getAlpha(int);
 

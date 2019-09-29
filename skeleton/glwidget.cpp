@@ -34,7 +34,7 @@ void GLWidget::loadFaces(const QString &path) {
 void GLWidget::initializeGL() {
 
     static const float init_zoom = 0.0294083;
-   glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background color
+   glClearColor(0.0f, 0.0f, 0.80f, 1.0f); // Set background color
     glClearDepth(1.0f);                   // Set background depth to farthest
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -47,22 +47,30 @@ void GLWidget::initializeGL() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glScalef(init_zoom, init_zoom, init_zoom);
+
+    glDisable(GL_LIGHTING );
 }
 
 void GLWidget::paintGL() {
-  QSize viewport_size = size();
-  glViewport(0, 0, viewport_size.width(), viewport_size.height());
+    QSize viewport_size = size();
+    glViewport(0, 0, viewport_size.width(), viewport_size.height());
+    float ar = (float) viewport_size.width() / (float) viewport_size.height();
 
-  /*
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+    /*
    *  Config Projection Matrix  GL_PROJECTION
    */
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();                 // Reset the model-view matrix
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();                 // Reset the model-view matrix
+    if(viewport_size.width() <= viewport_size.height()){
+        glOrtho(-1.0, 1.0, -1 / ar, 1.0 / ar, 1.0, -1.0);
+    }
+    else{
+        glOrtho(-1.0 *ar, 1.0 *ar, -1.0, 1.0, 1.0, -1.0);
+    }
 
-
-
-  /*
+    /*
    *  Config Model View Matrix  GL_MODELVIEW
    */
   glMatrixMode(GL_MODELVIEW);
@@ -93,19 +101,42 @@ void GLWidget::paintGL() {
 
   //*********** Draw the model//
   // Define vertices in counter-clockwise (CCW) order with normal pointing out
+
+  QVector3D view_coords;
+  vector<pair<float, int>> vp;
+
+
+  for (int face_index=0;face_index<face_collection.faces.size();face_index++)
+  {
+      Face face = face_collection.faces[face_index];
+      view_coords = object2view(face, m);
+      vp.push_back(make_pair(view_coords.z(), face_index));
+  }
+  sort(vp.begin(), vp.end());
+  reverse(vp.begin(),vp.end());
+
+
   if(face_collection.init==true)
   {
-
+float last_value = 0;
       /*glDepthMask(GL_FALSE);*/
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glBlendEquation(GL_FUNC_ADD);
 
       glBegin(GL_QUADS);
 
       for (int face_index=0;face_index<face_collection.faces.size();face_index++)
       {
-          Face face = face_collection.faces[face_index];
-          float color = face_index/(float)face_collection.faces.size() - 0.1;//face.c;//float)// //
+          /*Face face = face_collection.faces[face_index];*/
+          Face face = face_collection.faces[vp[face_index].second];
+          if(last_value != vp[face_index].first)
+          {
+              //cout<<"index = "<<vp[face_index].second << " coord :"<<vp[face_index].first <<endl;
+              last_value = vp[face_index].first;
+          }
+
+          float color = face.c;//face_index/(float)face_collection.faces.size() - 0.1;//face.c;//float)// //
           glColor4f(color, color, color, _alphaNew);
           glVertex3f( face.vertices[0].x(), face.vertices[0].y(), face.vertices[0].z());
           glVertex3f( face.vertices[1].x(), face.vertices[1].y(), face.vertices[1].z());
@@ -120,6 +151,34 @@ void GLWidget::paintGL() {
 
 
   }
+}
+
+
+QVector3D GLWidget::object2view(Face face, GLfloat *model){
+
+    QVector4D center, view_vec;
+    QVector3D view_coords;
+//    for(int i = 0; i < 16; i ++){
+//        cout << model[i] << endl;
+//    }
+
+
+    center.setX((face.vertices[0].x() + face.vertices[2].x())/2.0);
+    center.setY((face.vertices[0].y() + face.vertices[2].y())/2.0);
+    center.setZ((face.vertices[0].z() + face.vertices[2].z())/2.0);
+    center.setW(1.0);
+
+    view_vec.setX(center.x()*model[0] + center.y()*model[4] + center.z()*model[8] + center.w()*model[12]);
+    view_vec.setY(center.x()*model[1] + center.y()*model[5] + center.z()*model[9] + center.w()*model[13]);
+    view_vec.setZ(center.x()*model[2] + center.y()*model[6] + center.z()*model[10] + center.w()*model[14]);
+    view_vec.setW(center.x()*model[3] + center.y()*model[7] + center.z()*model[11] + center.w()*model[15]);
+    //cout << model[4] << endl;
+    view_coords.setX(view_vec.x()/view_vec.w());
+    view_coords.setY(view_vec.y()/view_vec.w());
+    view_coords.setZ(view_vec.z()/view_vec.w());
+
+    return view_coords;
+
 }
 
 void GLWidget::getAlpha(int alpha){

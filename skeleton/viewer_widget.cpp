@@ -20,19 +20,7 @@ void ViewerWidget::loadFile() {
   gl_widget->loadFaces(file_name);
 }
 
-
 void ViewerWidget::alphaSlide(int alpha){
     gl_widget-> getAlpha(alpha);
     gl_widget-> update();
-}
-void ViewerWidget::resizeEvent(QResizeEvent *event)
-{
-   static const float ratioY2X = 1;
-
-   if (event->oldSize().width() != event->size().width())
-      this->resize(event->size().width(),event->size().width() * ratioY2X);           // apply the correct ratio width/height
-   else
-      this->resize(event->size().height() / ratioY2X, event->size().height());   // apply the correct ratio
-
-   event->accept(); // we've finished processing resize event here
 }

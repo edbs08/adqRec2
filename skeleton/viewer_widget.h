@@ -18,7 +18,6 @@ public:
 
   QSlider *slider = new QSlider(Qt::Horizontal);
 
-  void resizeEvent(QResizeEvent *event);
 public slots:
   void alphaSlide(int);
   void loadFile();
