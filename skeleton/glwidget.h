@@ -14,14 +14,14 @@ class GLWidget : public QOpenGLWidget {
 public:
   Q_OBJECT
     float _alphaNew = 1;
-    float left_rot=0;
-    float zoomScale=1;
+
+    float rotation_angle=0;
+    float zoomScale=0.0693433;
     float speed_factor = 1;
     QPointF translation=QPoint(0.0f,0.0f);
-    QPointF rotation=QPoint(0.0f,0.0f);
+    QPointF rotation=QPoint(1.0f,0.0f);
 
-    float right_trans = 0;
-    QPoint old_point=QPoint(0.0f,0.0f);
+    GLfloat m[16]={};
     QPoint old_point_t=QPoint(0.0f,0.0f);
 public:
   GLWidget(QWidget *parent = 0);

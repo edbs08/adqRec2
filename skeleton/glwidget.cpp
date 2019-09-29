@@ -1,4 +1,3 @@
-
 #include <QFile>
 #include <QString>
 #include <QTransform>
@@ -34,45 +33,80 @@ void GLWidget::loadFaces(const QString &path) {
 
 void GLWidget::initializeGL() {
 
+    static const float init_zoom = 0.0294083;
    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background color
     glClearDepth(1.0f);                   // Set background depth to farthest
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
+    //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
     setMouseTracking(true);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glScalef(init_zoom, init_zoom, init_zoom);
 }
 
 void GLWidget::paintGL() {
   QSize viewport_size = size();
   glViewport(0, 0, viewport_size.width(), viewport_size.height());
 
-
+  /*
+   *  Config Projection Matrix  GL_PROJECTION
+   */
   glMatrixMode(GL_PROJECTION);
-  // TODO: define the point of view
-  glLoadIdentity();
+  glLoadIdentity();                 // Reset the model-view matrix
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
 
- // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+
+
+  /*
+   *  Config Model View Matrix  GL_MODELVIEW
+   */
+  glMatrixMode(GL_MODELVIEW);
+  glGetFloatv(GL_MODELVIEW_MATRIX, m);
+  glLoadIdentity();
+  /*Rotation*/
+  glRotatef(rotation_angle,rotation.y(),rotation.x(),0.0f);
+  rotation_angle = 0;
+  /*Translation*/
+  glTranslatef(translation.x(),translation.y(),0.0f);
+  translation.rx()=0;
+  translation.ry()=0;
+  /*Scale*/
+  glScalef(zoomScale, zoomScale, zoomScale);
+  zoomScale = 1;
+
+  glMultMatrixf(m);
+  glGetFloatv(GL_MODELVIEW_MATRIX, m);
+
+    /* Print the matrix */
+/*
+  for(int i=0;i<16;i++)
+  {
+      cout<<m[i]<<" ";
+  }
+  cout<<endl;
+*/
+
+  //*********** Draw the model//
+  // Define vertices in counter-clockwise (CCW) order with normal pointing out
   if(face_collection.init==true)
   {
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();                 // Reset the model-view matrix
-      glTranslatef(translation.x(),translation.y(),0.0f);
-      glRotatef(left_rot,rotation.x(),rotation.y(),0.0);
-      glScalef(zoomScale, zoomScale, zoomScale);
-      //***********//
 
-      // TODO: draw the model
-      // Define vertices in counter-clockwise (CCW) order with normal pointing out
-      glDepthMask(GL_FALSE);
+      /*glDepthMask(GL_FALSE);*/
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
       glBegin(GL_QUADS);
 
       for (int face_index=0;face_index<face_collection.faces.size();face_index++)
       {
           Face face = face_collection.faces[face_index];
           float color = face_index/(float)face_collection.faces.size() - 0.1;//face.c;//float)// //
-          glColor4f(color, color, color, _alphaNew);     // Green
+          glColor4f(color, color, color, _alphaNew);
           glVertex3f( face.vertices[0].x(), face.vertices[0].y(), face.vertices[0].z());
           glVertex3f( face.vertices[1].x(), face.vertices[1].y(), face.vertices[1].z());
           glVertex3f( face.vertices[2].x(), face.vertices[2].y(), face.vertices[2].z());
@@ -81,9 +115,8 @@ void GLWidget::paintGL() {
       }
        glEnd();
 
-       glEnable(GL_DEPTH_TEST);
        glDisable(GL_BLEND);
-       glDepthMask(GL_TRUE);
+       /*glDepthMask(GL_TRUE);*/
 
 
   }
@@ -104,6 +137,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
     //get mouse position
     QPoint displace(0,0);
     QPoint mouse_pos = event->pos();
+    /*Code to check in what direction is the button preesed*/
     if( event->buttons() == Qt::RightButton ||  event->buttons() == Qt::LeftButton)
     {
         if((mouse_pos.x()-old_point_t.x()) > 0)
@@ -137,46 +171,16 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
     /* Left button = rotation*/
     if( event->buttons() == Qt::LeftButton)
     {
-        double new_value = 0.01*displace.x();
-        if((rotation.x() >=-1 && rotation.x() <= 1))
-        {
-           rotation.rx()+=speed_factor*0.01*displace.x();
-        }
-        else
-        {
-            if((rotation.x()<=(-1) && new_value>=0) || (rotation.x()>=(1) && new_value<=0))
-            {
-                rotation.rx()+=speed_factor*0.01*displace.x();
-            }
-        }
-        //cout<<"x "<<rotation.x()<<endl;
+        rotation.rx()=-displace.x();
+        rotation.ry()=displace.y();
 
-        new_value = 0.01*displace.y();
-        if(rotation.y() >=-1 && rotation.y() <= 1)
-        {
-            rotation.ry()+=speed_factor*0.01*displace.y();
-        }
-        else
-        {
-            if((rotation.y()<=(-1) && new_value>=0) || (rotation.y()>=(1) && new_value<=0))
-            {
-                rotation.ry()+=speed_factor*0.01*displace.y();
-            }
-
-        }
-        //cout<<"y "<<rotation.y()<<endl;
-
-        left_rot+=(speed_factor*3*displace.y())+(speed_factor*3*displace.x());
-        if(left_rot >= 360 )
-        {
-            left_rot =0;
-        }
+        rotation_angle = speed_factor*2;
     }
     /* Right button = Translation*/
     if( event->buttons() == Qt::RightButton)
     {
-        translation.rx()+= (pow(speed_factor,1.5)*0.01*displace.x());
-        translation.ry()+= (pow(speed_factor,1.5)*0.01*displace.y());
+        translation.rx()= (pow(speed_factor,1.5)*0.02*displace.x());
+        translation.ry()= (pow(speed_factor,1.5)*0.02*displace.y());
     }
 
     /*Update points*/
@@ -191,9 +195,10 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 {
   // TODO: zoom
     QPoint numDegrees = event->angleDelta();
-    if (numDegrees.y() < 0)  zoomScale = zoomScale/(1.1*speed_factor);
-    if (numDegrees.y() > 0)  zoomScale = zoomScale*(1.1*speed_factor);
 
+    if (numDegrees.y() < 0)  zoomScale = (-1);
+    if (numDegrees.y() > 0)  zoomScale = 1;
+    zoomScale = pow((1.1*speed_factor),zoomScale);
     QWidget::update(); // call paintGL()
 }
 
@@ -214,5 +219,3 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
         speed_factor = 1;
     }
 }
-
-
