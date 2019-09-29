@@ -13,7 +13,11 @@
 class GLWidget : public QOpenGLWidget {
 public:
   Q_OBJECT
+    static const int SORTING_ON = 0;
+    static const int SORTING_OFF = 1;
+
     float _alphaNew = 1;
+    int sorting = 0;
 
     float rotation_angle=0;
     float zoomScale=0.0693433;
@@ -31,6 +35,7 @@ public:
   QVector3D object2view(Face face, GLfloat *model);
   void loadFaces(const QString &path);
   void getAlpha(int);
+  void get_sorting_index(int index);
 
 protected:
   void initializeGL() override;

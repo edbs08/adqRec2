@@ -34,7 +34,7 @@ void GLWidget::loadFaces(const QString &path) {
 void GLWidget::initializeGL() {
 
     static const float init_zoom = 0.0294083;
-   glClearColor(0.0f, 0.0f, 0.80f, 1.0f); // Set background color
+   glClearColor(0.6f, 0.8f, 1.0f, 1.0f); // Set background color
     glClearDepth(1.0f);                   // Set background depth to farthest
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -118,7 +118,6 @@ void GLWidget::paintGL() {
 
   if(face_collection.init==true)
   {
-float last_value = 0;
       /*glDepthMask(GL_FALSE);*/
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -128,12 +127,14 @@ float last_value = 0;
 
       for (int face_index=0;face_index<face_collection.faces.size();face_index++)
       {
-          /*Face face = face_collection.faces[face_index];*/
-          Face face = face_collection.faces[vp[face_index].second];
-          if(last_value != vp[face_index].first)
+          Face face;
+          if(sorting== SORTING_ON)
           {
-              //cout<<"index = "<<vp[face_index].second << " coord :"<<vp[face_index].first <<endl;
-              last_value = vp[face_index].first;
+               face = face_collection.faces[vp[face_index].second];
+          }
+          else
+          {
+               face = face_collection.faces[face_index];
           }
 
           float color = face.c;//face_index/(float)face_collection.faces.size() - 0.1;//face.c;//float)// //
@@ -186,6 +187,11 @@ void GLWidget::getAlpha(int alpha){
     _alphaNew = 1 - ((float)alpha/100.0);
     paintGL();
 
+}
+
+void GLWidget::get_sorting_index(int index)
+{
+    sorting = index;
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event) {

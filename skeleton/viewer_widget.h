@@ -3,6 +3,7 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QSlider>
+#include <QComboBox>
 
 #include "glwidget.h"
 
@@ -18,7 +19,12 @@ public:
 
   QSlider *slider = new QSlider(Qt::Horizontal);
 
+  QComboBox * Box = new QComboBox();
+  QAction * firstAction;
+  QAction * secondAction;
+
 public slots:
   void alphaSlide(int);
   void loadFile();
+  void boxCurrentIndexChanged(int);
 };
